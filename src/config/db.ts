@@ -15,7 +15,7 @@ const dbConfig = {
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: false,
   logging: true,
-  ssl: true,
+  ssl: false,
 };
 
 export const databaseConfig: TypeOrmModuleOptions = dbConfig;

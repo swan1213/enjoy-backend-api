@@ -27,7 +27,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(8000);
-  console.log('Application is running on: http://localhost:3000');
-  console.log('Swagger documentation: http://localhost:3000/api');
+  console.log('Application is running on: http://localhost:8000');
+  console.log('Swagger documentation: http://localhost:8000/api');
 }
 bootstrap();

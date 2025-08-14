@@ -27,7 +27,7 @@ config();
       entities: ['dist/**/*.entity{.ts,.js}'],
       migrations: ['dist/migrations/*{.ts,.js}'],
         synchronize: false,
-        ssl: true,
+        ssl: false,
    
     }),
     AuthModule,
