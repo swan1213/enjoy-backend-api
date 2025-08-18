@@ -10,32 +10,32 @@ import { RouteDto } from "./dto/update-route.dto";
 @ApiTags('Vehicle management')
 @Controller('vehicles')
 export class VehicleController {
-    constructor(private readonly vehicleService:VehicleService){}
-     @UseGuards(JwtAuthGuard)
-      @ApiBearerAuth()
-    @Post()
-    createVehicle(){
+  constructor(private readonly vehicleService: VehicleService) { }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post()
+  createVehicle() {
     return this.vehicleService.createVehicle()
-    }
-    
-     @UseGuards(JwtAuthGuard)
-      @ApiBearerAuth()
-    @Get()
-    getVehicles(){
-     return this.vehicleService.getVehicles();
-    }
-     @UseGuards(JwtAuthGuard)
-      @ApiBearerAuth() 
-    @Patch(':vehicleId/edit')
+  }
 
-     manageVehicles(@Body()dto:UpdateVehicleDto, @Param('vehicleId')vehicleId:string){
-      return this.vehicleService.manageVehicles(dto, vehicleId)
-    }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get()
+  getVehicles() {
+    return this.vehicleService.getVehicles();
+  }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch(':vehicleId/edit')
 
-        @UseGuards(JwtAuthGuard)
-      @ApiBearerAuth() 
-    @Patch(':routeId/route/edit')
-     manageRoute(@Body()dto:RouteDto, @Param('routeId')vehicleId:string){
-      return this.vehicleService.manageRoute(dto, vehicleId)
-    }
+  manageVehicles(@Body() dto: UpdateVehicleDto, @Param('vehicleId') vehicleId: string) {
+    return this.vehicleService.manageVehicles(dto, vehicleId)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch(':routeId/route/edit')
+  manageRoute(@Body() dto: RouteDto, @Param('routeId') vehicleId: string) {
+    return this.vehicleService.manageRoute(dto, vehicleId)
+  }
 }

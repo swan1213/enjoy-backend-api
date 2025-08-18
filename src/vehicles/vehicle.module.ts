@@ -7,11 +7,11 @@ import { FixedRoutes } from "./entity/routes.entity";
 
 
 @Module({
-    imports:[
+    imports: [
         TypeOrmModule.forFeature([VehicleEntity, FixedRoutes])
     ],
-    providers:[VehicleService],
-    controllers:[VehicleController]
+    providers: [VehicleService],
+    controllers: [VehicleController]
 })
 
 export class VehicleModule {

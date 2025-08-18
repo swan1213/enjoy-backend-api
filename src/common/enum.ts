@@ -17,7 +17,7 @@ export enum PaymentStatus {
   PAID = 'paid',
   FAILED = 'failed',
   REFUNDED = 'refunded',
-  COMPLETED='completed'
+  COMPLETED = 'completed'
 }
 
 export enum PaymentMethod {
@@ -29,17 +29,17 @@ export enum Languages {
   FRENCH = 'fr',
   ENGLISH = 'en',
   SPANISH = 'es',
-  PORTUGUESE='pt',
-  ARABIC='ar',
-  GERMANY='de',
-  ITALIAN='it',
-  CHINESE='zh'
+  PORTUGUESE = 'pt',
+  ARABIC = 'ar',
+  GERMANY = 'de',
+  ITALIAN = 'it',
+  CHINESE = 'zh'
 }
 
 export enum VehicleTypes {
   SEDAN = 'sedan',
   VAN = 'van',
-  BERLINE='berline'
+  BERLINE = 'berline'
 
 }
 

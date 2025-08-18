@@ -5,18 +5,18 @@ import { FixedRoutes } from "./routes.entity";
 
 export class VehicleEntity {
     @PrimaryGeneratedColumn('uuid')
-    vehicleId:string
+    vehicleId: string
 
     @Column()
-    vehicleType:string
+    vehicleType: string
 
-    @Column('float', {default:0})
-    price:number
+    @Column('float', { default: 0 })
+    price: number
 
-    @Column('float', {default:0})
-    pricePerKm:number
+    @Column('float', { default: 0 })
+    pricePerKm: number
 
-   @OneToMany(()=>FixedRoutes, route=>route.vehicleType, {cascade:true})
-   fixedRoutes:FixedRoutes[]
+    @OneToMany(() => FixedRoutes, route => route.vehicleType, { cascade: true })
+    fixedRoutes: FixedRoutes[]
 }
 

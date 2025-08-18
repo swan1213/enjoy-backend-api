@@ -2,17 +2,17 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString } from "class-validator";
 
 
-export class SendRideDetailsDto  {
+export class SendRideDetailsDto {
     @ApiProperty()
     @IsString()
-    message: string 
+    message: string
 
     @ApiProperty()
     @IsString()
-    email:string
-    
+    email: string
+
     @IsOptional()
     @ApiProperty()
     @IsString()
-    subject:string
+    subject: string
 }

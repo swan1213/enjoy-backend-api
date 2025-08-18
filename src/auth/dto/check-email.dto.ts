@@ -5,6 +5,6 @@ import { IsEmail } from 'class-validator';
 export class CheckEmailDto {
   @ApiProperty({ example: 'user@example.com', description: 'Email to check' })
   @IsEmail()
-   @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => value.toLowerCase())
   email: string;
 }

@@ -8,28 +8,28 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 export class LegalController {
     constructor(
         private readonly legalService: LegalService
-    ){}
-     
+    ) { }
+
     @Post()
-     async  createContent(@Body()dto:UpdateContentDto){
-      return this.legalService.createLegalContent(dto);
-     }
+    async createContent(@Body() dto: UpdateContentDto) {
+        return this.legalService.createLegalContent(dto);
+    }
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-     @Patch(':postId')
-     async updateLegalContent(@Body()dto:UpdateContentDto, @Param('postId')postId:string){
-      return this.legalService.updateLegalContent(dto, postId);
+    @Patch(':postId')
+    async updateLegalContent(@Body() dto: UpdateContentDto, @Param('postId') postId: string) {
+        return this.legalService.updateLegalContent(dto, postId);
     }
 
-       @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-     @Delete(':postId')
-     async deleteLegalContent(@Param('postId')postId:string){
-      return this.legalService.deleteContent( postId);
+    @Delete(':postId')
+    async deleteLegalContent(@Param('postId') postId: string) {
+        return this.legalService.deleteContent(postId);
     }
 
     @Get()
-    async getContent(@Query()dto:LegalQuery){
+    async getContent(@Query() dto: LegalQuery) {
         return this.legalService.getContent(dto)
     }
 }

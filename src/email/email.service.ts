@@ -109,14 +109,14 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(
-    to: string, 
-    firstName: string, 
-    resetToken: string, 
+    to: string,
+    firstName: string,
+    resetToken: string,
     resetCode: string
   ): Promise<boolean> {
     const resetUrl = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${resetToken}`;
     const subject = 'Réinitialisation de votre mot de passe - Enjoý';
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -197,13 +197,13 @@ export class EmailService {
   }
 
   async sendEmailVerificationEmail(
-    to: string, 
-    firstName: string, 
+    to: string,
+    firstName: string,
     verificationToken: string
   ): Promise<boolean> {
     const verificationUrl = `${this.configService.get<string>('FRONTEND_URL')}/verify-email?token=${verificationToken}`;
     const subject = 'Vérifiez votre adresse email - Enjoý';
-    
+
     const html = `
       <!DOCTYPE html>
       <html>

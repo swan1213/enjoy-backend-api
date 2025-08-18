@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards,Request } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards, Request } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CreateBookingDto } from "./dto/bookings.dto";
 import { Booking } from "./entities/booking.entity";
@@ -10,14 +10,14 @@ import { SendRideDetailsDto } from "./dto/send-ride-details.dto";
 @ApiTags('Bookings')
 @Controller('bookings')
 export class TripBookingController {
-    constructor(
-     private readonly bookingService: BookingService
-    ){
-   
-    }
-   @Post()
-   @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+  constructor(
+    private readonly bookingService: BookingService
+  ) {
+
+  }
+  @Post()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a new booking' })
   @ApiResponse({
     status: 201,
@@ -54,10 +54,10 @@ export class TripBookingController {
     return await this.bookingService.create(createBookingDto);
   }
 
-   @Get('/:bookingId/details')
-   @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-     @ApiOperation({ summary: 'Call endpoint to get a booking details' })
+  @Get('/:bookingId/details')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Call endpoint to get a booking details' })
   @ApiResponse({
     status: 201,
     description: 'Booking created successfully',
@@ -87,41 +87,41 @@ export class TripBookingController {
       },
     },
   })
-   async getBookingDetails(@Param('bookingId')bookingId:string){
+  async getBookingDetails(@Param('bookingId') bookingId: string) {
     return await this.bookingService.findOne(bookingId);
 
-   }
+  }
 
-    @Patch('admin/:bookingId/complete')
-     async markTripAsCompleted(@Param('bookingId')bookingId:string){
+  @Patch('admin/:bookingId/complete')
+  async markTripAsCompleted(@Param('bookingId') bookingId: string) {
     return await this.bookingService.markTripAsCompleted(bookingId);
-   }
+  }
 
-@Get('admin/all')
-async findAllBooking(@Query()dto:SearchBookingDto){
+  @Get('admin/all')
+  async findAllBooking(@Query() dto: SearchBookingDto) {
     return await this.bookingService.findAll(dto)
-}
+  }
 
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard)
-// @Get('/history')
-// async findTripHistory(   @Request()req,@Query()dto:SearchBookingDto,){
-//   console.log(req.user)
-//     return await this.bookingService.usertripHistory(dto,     req.user.id,)
-// }
-@Get('/history')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-async findTripHistory(
-  @Request() req,
-  @Query() dto: SearchBookingDto,
-) {
-  return this.bookingService.usertripHistory(dto, req.user.id);
-}
+  // @ApiBearerAuth()
+  // @UseGuards(JwtAuthGuard)
+  // @Get('/history')
+  // async findTripHistory(   @Request()req,@Query()dto:SearchBookingDto,){
+  //   console.log(req.user)
+  //     return await this.bookingService.usertripHistory(dto,     req.user.id,)
+  // }
+  @Get('/history')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async findTripHistory(
+    @Request() req,
+    @Query() dto: SearchBookingDto,
+  ) {
+    return this.bookingService.usertripHistory(dto, req.user.id);
+  }
 
 
   @Patch('/:bookingId')
-   @ApiBearerAuth()
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Call endpoint once payment is succeeded' })
   @ApiResponse({
@@ -153,43 +153,43 @@ async findTripHistory(
       },
     },
   })
-async completePayment(@Param('bookingId')bookingId:string){
- return this.bookingService.completePayment(bookingId)
-}
-@ApiOperation({ summary: 'Call endpoint once payment failed' })
-@Post(':bookingId/payment-fail')
-async paymentFailure(@Param('bookingId')bookingId:string){
- return this.bookingService.completePayment(bookingId)
-}
+  async completePayment(@Param('bookingId') bookingId: string) {
+    return this.bookingService.completePayment(bookingId)
+  }
+  @ApiOperation({ summary: 'Call endpoint once payment failed' })
+  @Post(':bookingId/payment-fail')
+  async paymentFailure(@Param('bookingId') bookingId: string) {
+    return this.bookingService.completePayment(bookingId)
+  }
 
-@Post('/:bookingId/cancel-request')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-async requestCancel(
-  @Param('bookingId') bookingId: string,
-  @Request() req,
-  @Body() dto: CancelBookingRequestDto,
-) {
-  return this.bookingService.requestCancellation(bookingId, req.user.id, dto);
-}
+  @Post('/:bookingId/cancel-request')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async requestCancel(
+    @Param('bookingId') bookingId: string,
+    @Request() req,
+    @Body() dto: CancelBookingRequestDto,
+  ) {
+    return this.bookingService.requestCancellation(bookingId, req.user.id, dto);
+  }
 
-@Post('/admin/:bookingId/handle-cancellation')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard) 
-async handleCancel(
-  @Param('bookingId') bookingId: string,
-  @Body() dto: HandleCancellationDto,
-) {
-  return this.bookingService.handleCancellation(bookingId, dto);
-}
+  @Post('/admin/:bookingId/handle-cancellation')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async handleCancel(
+    @Param('bookingId') bookingId: string,
+    @Body() dto: HandleCancellationDto,
+  ) {
+    return this.bookingService.handleCancellation(bookingId, dto);
+  }
 
-@Post('/admin/send-email')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard) 
-async sendEmail(
-  @Body() dto: SendRideDetailsDto,
-) {
-  return this.bookingService.sendRideDetails(dto);
-}
+  @Post('/admin/send-email')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async sendEmail(
+    @Body() dto: SendRideDetailsDto,
+  ) {
+    return this.bookingService.sendRideDetails(dto);
+  }
 
 }

@@ -20,34 +20,34 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-     @InjectRepository(Booking)
-     private bookingRepository: Repository<Booking>,
+    @InjectRepository(Booking)
+    private bookingRepository: Repository<Booking>,
     @InjectRepository(PasswordReset)
     private passwordResetRepository: Repository<PasswordReset>,
     private jwtService: JwtService,
     private readonly emailService: EmailService
-  ) {}
+  ) { }
 
   async checkEmail(email: string) {
-  const user = await this.userRepository
-  .createQueryBuilder('user')
-  .where('LOWER(user.email) = LOWER(:email)', { email: email })
-  .getOne();  
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email: email })
+      .getOne();
     return {
       exists: !!user,
       message: user ? 'Email already registered' : 'Email available'
     };
   }
 
-  
+
   async signUp(signUpDto: SignUpDto) {
     // Check if user already exists
-    const existingUser = await this.userRepository.findOne({ 
-      where: { email: signUpDto.email.toLowerCase() } 
+    const existingUser = await this.userRepository.findOne({
+      where: { email: signUpDto.email.toLowerCase() }
     });
-    
+
     if (existingUser) {
-   
+
       throw new ConflictException('Un compte existe déjà avec cette adresse e-mail');
     }
 
@@ -62,7 +62,7 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    const welcomeEmail  =`<!DOCTYPE html>
+    const welcomeEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -92,12 +92,12 @@ export class AuthService {
 
     // Generate JWT token
     const payload = { sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload, );
-      this.emailService.sendEmail({
-        to:user.email, 
-        html:welcomeEmail,
-        subject:'Bienvenue sur enjöy !'
-      })
+    const accessToken = this.jwtService.sign(payload,);
+    this.emailService.sendEmail({
+      to: user.email,
+      html: welcomeEmail,
+      subject: 'Bienvenue sur enjöy !'
+    })
     return {
       message: 'Compte créé avec succès',
       user: {
@@ -113,17 +113,17 @@ export class AuthService {
   }
 
   async signIn(signInDto: SignInDto) {
-   const user = await this.userRepository
-  .createQueryBuilder('user')
-  .where('LOWER(user.email) = LOWER(:email)', { email: signInDto.email })
-  .getOne();
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email: signInDto.email })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('Identifiants invalides');
     }
 
     const isPasswordValid = await bcrypt.compare(signInDto.password, user.password);
-    
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Identifiants invalides');
     }
@@ -135,8 +135,8 @@ export class AuthService {
     // Generate JWT token
     const payload = { sub: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload, {
-  expiresIn: '7d', // expires in 7 days
-});
+      expiresIn: '7d', // expires in 7 days
+    });
 
     return {
       message: 'Connexion réussie',
@@ -154,9 +154,9 @@ export class AuthService {
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
     const user = await this.userRepository
-  .createQueryBuilder('user')
-  .where('LOWER(user.email) = LOWER(:email)', { email: forgotPasswordDto.email })
-  .getOne();
+      .createQueryBuilder('user')
+      .where('LOWER(user.email) = LOWER(:email)', { email: forgotPasswordDto.email })
+      .getOne();
 
     if (!user) {
       throw new NotFoundException('Aucun compte trouvé avec cette adresse e-mail');
@@ -177,7 +177,7 @@ export class AuthService {
     });
 
     await this.passwordResetRepository.save(passwordReset);
-     this.emailService.sendEmail({to:user.email, text:`Use ${code} to reset your password`,subject:`Password reset ${code}`})
+    this.emailService.sendEmail({ to: user.email, text: `Use ${code} to reset your password`, subject: `Password reset ${code}` })
     // Here you would send the email with the reset link and code
     // For demo purposes, we're just returning the code
     console.log(`Reset code for ${user.email}: ${code}`);
@@ -192,7 +192,7 @@ export class AuthService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const passwordReset = await this.passwordResetRepository.findOne({
-      where: { 
+      where: {
         token: resetPasswordDto.token,
         code: resetPasswordDto.code,
         isUsed: false,
@@ -228,12 +228,12 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.userRepository.findOne({ where: { email } });
-    
+
     if (user && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;
     }
-    
+
     return null;
   }
 
@@ -242,95 +242,95 @@ export class AuthService {
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
-  // Find the user
-  const user = await this.userRepository.findOne({ where: { id: userId } });
+    // Find the user
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
-  if (!user) {
-    throw new NotFoundException('Utilisateur non trouvé');
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Verify the current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Mot de passe actuel incorrect');
+    }
+
+    // Hash the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update the password
+    user.password = hashedNewPassword;
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Mot de passe mis à jour avec succès',
+    };
   }
 
-  // Verify the current password
-  const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-  if (!isPasswordValid) {
-    throw new UnauthorizedException('Mot de passe actuel incorrect');
+  async findAllUsers(page = 1, limit = 10): Promise<{
+    data: User[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const [data, total] = await this.userRepository.findAndCount({
+      where: { isAdmin: false },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: (page - 1) * limit,
+      select: ['id', 'firstName', 'lastName', 'email', 'phone', 'birthYear', 'isActive'],
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 
-  // Hash the new password
-  const hashedNewPassword = await bcrypt.hash(newPassword, 12);
-
-  // Update the password
-  user.password = hashedNewPassword;
-  await this.userRepository.save(user);
-
-  return {
-    message: 'Mot de passe mis à jour avec succès',
-  };
-}
-
-async findAllUsers(page = 1, limit = 10): Promise<{
-  data: User[];
-  total: number;
-  page: number;
-  limit: number;
-}> {
-  const [data, total] = await this.userRepository.findAndCount({
-    where:{isAdmin:false},
-    order: { createdAt: 'DESC' },
-    take: limit,
-    skip: (page - 1) * limit,
-    select: ['id', 'firstName', 'lastName', 'email', 'phone', 'birthYear', 'isActive'],
-  });
-
-  return {
-    data,
-    total,
-    page,
-    limit,
-  };
-}
-
-async suspendUser(id: string): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({where:{ id}});
+  async suspendUser(id: string): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id } });
     user.isActive = !user.isActive;
     await this.userRepository.save(user);
-    return { message:!user.isActive==false? 'Utilisateur suspendu avec succès':'Account activated' };
+    return { message: !user.isActive == false ? 'Utilisateur suspendu avec succès' : 'Account activated' };
   }
 
   async deleteUser(id: string): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({where:{ id}});
-    if(user){
-      await this.bookingRepository.delete({customerId:id})
-      await this.userRepository.delete({id});
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (user) {
+      await this.bookingRepository.delete({ customerId: id })
+      await this.userRepository.delete({ id });
       return { message: 'Utilisateur supprimé avec succès' };
-    }else{
-       throw new NotFoundException('Utilisateur non trouvé');
+    } else {
+      throw new NotFoundException('Utilisateur non trouvé');
     }
-   
- 
+
+
   }
-// src/users/user.service.ts
-async updateUser(userId: string, updateUserDto: UpdateUserDto) {
-  const user = await this.userRepository.findOne({ where: { id: userId } });
+  // src/users/user.service.ts
+  async updateUser(userId: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
-  if (!user) {
-    throw new NotFoundException('Utilisateur non trouvé');
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    Object.assign(user, updateUserDto);
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Informations mises à jour avec succès',
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        birthYear: user.birthYear,
+      },
+    };
   }
-
-  Object.assign(user, updateUserDto);
-  await this.userRepository.save(user);
-
-  return {
-    message: 'Informations mises à jour avec succès',
-    user: {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      birthYear: user.birthYear,
-    },
-  };
-}
 
 
 }

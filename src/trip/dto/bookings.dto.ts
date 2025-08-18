@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsDateString, IsDecimal, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
-import {  Languages, PaymentMethod, VehicleTypes } from 'src/common/enum';
+import { Languages, PaymentMethod, VehicleTypes } from 'src/common/enum';
 
 
 
@@ -12,48 +12,48 @@ export class CreateBookingDto {
   departureLocation: string;
 
   @ApiProperty()
-  @Type(() => Number) 
+  @Type(() => Number)
   @IsNumber()
-  departureLat:number
-    @ApiProperty()
+  departureLat: number
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  departAddress:string
-    @ApiProperty()
+  departAddress: string
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  destinationAddress:string
+  destinationAddress: string
 
   @ApiProperty()
-  @Type(() => Number) 
+  @Type(() => Number)
   @IsNumber()
-   departureLng:number
-
-   @ApiProperty()
-   @Type(() => Number) 
-  @IsNumber()
-  
-  destinationLat:number
-
-   @ApiProperty()
-   @Type(() => Number) 
-  @IsNumber()
-  destinationLng:number
+  departureLng: number
 
   @ApiProperty()
+  @Type(() => Number)
   @IsNumber()
-  distance:number
+
+  destinationLat: number
+
+  @ApiProperty()
+  @Type(() => Number)
+  @IsNumber()
+  destinationLng: number
 
   @ApiProperty()
   @IsNumber()
-  time:number
+  distance: number
+
+  @ApiProperty()
+  @IsNumber()
+  time: number
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   destinationLocation: string;
 
-  
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -106,12 +106,12 @@ export class CreateBookingDto {
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  welcomeSign?: boolean=false;
+  welcomeSign?: boolean = false;
 
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  languageSpecific?: boolean=false;
+  languageSpecific?: boolean = false;
 
   @ApiProperty()
   @IsString()
@@ -136,7 +136,7 @@ export class CreateBookingDto {
   @IsEnum(PaymentMethod)
   @IsOptional()
   paymentMethod?: PaymentMethod;
- 
+
 
   @ApiProperty()
   @IsString()

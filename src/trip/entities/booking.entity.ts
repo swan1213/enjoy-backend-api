@@ -22,32 +22,32 @@ export class Booking {
 
   @Column()
   destinationLocation: string;
-   @Column({nullable:true})
-  departAddress:string
-   @Column({nullable:true})
-  destinationAddress:string
+  @Column({ nullable: true })
+  departAddress: string
+  @Column({ nullable: true })
+  destinationAddress: string
 
-    @Column({default:0, type:'float'})
+  @Column({ default: 0, type: 'float' })
   departureLat: number;
 
-  @Column({default:0, type:'float'})
+  @Column({ default: 0, type: 'float' })
   destinationLat: number;
 
-     @Column({default:0, type:'float'})
+  @Column({ default: 0, type: 'float' })
   departureLng: number;
 
-  @Column({default:0, type:'float'})
+  @Column({ default: 0, type: 'float' })
   destinationLng: number;
 
-     @Column({default:0, type:'float'})
+  @Column({ default: 0, type: 'float' })
   distance: number;
 
-  @Column({default:0})
-  refundedAmount:number
-  @Column({default:CancellationStatus.NONE})
-  cancellationStatus:string
+  @Column({ default: 0 })
+  refundedAmount: number
+  @Column({ default: CancellationStatus.NONE })
+  cancellationStatus: string
 
-  @Column({default:0})
+  @Column({ default: 0 })
   time: number;
 
   @Column({ type: 'timestamptz' })
@@ -64,9 +64,9 @@ export class Booking {
 
   @Column({ default: 0 })
   pets: number;
-  
+
   @Column({ default: 0 })
-  strollers:number
+  strollers: number
 
   @Column({ default: 0 })
   wheelchair: number;
@@ -93,7 +93,7 @@ export class Booking {
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
   languageFee: number;
 
-  @Column({type:Boolean, default:false})
+  @Column({ type: Boolean, default: false })
   specificLanguage: boolean;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
@@ -121,8 +121,8 @@ export class Booking {
   paymentMethod?: PaymentMethod;
 
   @Column({})
-  @ManyToOne(()=>User)
-  customerId:string
+  @ManyToOne(() => User)
+  customerId: string
 
   @ManyToOne(() => User, (user) => user.bookings)
   @JoinColumn({ name: 'customerId' })
@@ -132,7 +132,7 @@ export class Booking {
   @Column({ nullable: true })
   specialInstructions?: string;
 
-  @Column({}) 
+  @Column({})
   vehicleType: string;
 
   @CreateDateColumn()
@@ -141,9 +141,9 @@ export class Booking {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({nullable:true})
+  @Column({ nullable: true })
   cancellationRequestedAt: Date
 
-  @Column({nullable:true})
-  cancellationReason:string
+  @Column({ nullable: true })
+  cancellationReason: string
 }

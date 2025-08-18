@@ -26,14 +26,14 @@ config();
       database: process.env.DATABASE_NAME || 'enjoy',
       entities: ['dist/**/*.entity{.ts,.js}'],
       migrations: ['dist/migrations/*{.ts,.js}'],
-        synchronize: false,
-        ssl: false,
-   
+      synchronize: false,
+      ssl: false,
+
     }),
     AuthModule,
     TripBookingModule,
-    VehicleModule, 
+    VehicleModule,
     LegalModule
   ],
 })
-export class AppModule {}
+export class AppModule { }

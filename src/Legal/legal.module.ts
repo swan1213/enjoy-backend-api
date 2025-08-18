@@ -6,10 +6,10 @@ import { LegalEntity } from "./entities/legal.entity";
 
 @Module(
     {
-        imports:[TypeOrmModule.forFeature([LegalEntity])],
-        controllers:[LegalController],
-        providers:[LegalService]
+        imports: [TypeOrmModule.forFeature([LegalEntity])],
+        controllers: [LegalController],
+        providers: [LegalService]
     }
 )
 
-export class LegalModule {}
+export class LegalModule { }

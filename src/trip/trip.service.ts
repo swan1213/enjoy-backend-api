@@ -24,57 +24,57 @@ export class BookingService {
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
     @InjectRepository(User)
-     private userRepository: Repository<User>,
-     private readonly emailService:EmailService
-  ) {}
+    private userRepository: Repository<User>,
+    private readonly emailService: EmailService
+  ) { }
   // onModuleInit() {
   //   this.bookingRepository.deleteAll()
   // }
 
 
 
-async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; clientSecret?: string }> {
-  try {
-    const {
-      totalPrice,
-      languageFee,
-      welcomeSignFee,
-      paymentMethod,
-      customerId,
-      departAddress,
-      destinationAddress,
-      vehicleType,
-      boosterSeat,
-      flightNumber,
-      bags,
-      time,
-      driverLanguage,
-      passengers,
-      wheelchair,
-      pets,
-      strollers,
-      childSeat,
-    } = createBookingDto;
-    const user = await this.userRepository.findOne({where:{id:customerId}});
-    if (!user) {
-     throw new NotFoundException('User not found');
-    }
-    const booking = this.bookingRepository.create({
-      ...createBookingDto,
-      tripDateTime: new Date(createBookingDto.tripDateTime),
-      totalPrice,
-      languageFee,
-      welcomeSignFee,
-      paymentStatus: paymentMethod === PaymentMethod.CARD ? PaymentStatus.PENDING : PaymentStatus.PAID,
-    },);
+  async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; clientSecret?: string }> {
+    try {
+      const {
+        totalPrice,
+        languageFee,
+        welcomeSignFee,
+        paymentMethod,
+        customerId,
+        departAddress,
+        destinationAddress,
+        vehicleType,
+        boosterSeat,
+        flightNumber,
+        bags,
+        time,
+        driverLanguage,
+        passengers,
+        wheelchair,
+        pets,
+        strollers,
+        childSeat,
+      } = createBookingDto;
+      const user = await this.userRepository.findOne({ where: { id: customerId } });
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      const booking = this.bookingRepository.create({
+        ...createBookingDto,
+        tripDateTime: new Date(createBookingDto.tripDateTime),
+        totalPrice,
+        languageFee,
+        welcomeSignFee,
+        paymentStatus: paymentMethod === PaymentMethod.CARD ? PaymentStatus.PENDING : PaymentStatus.PAID,
+      },);
 
-    const savedBooking = await this.bookingRepository.save(booking);
-    const bookingCustomer = await this.bookingRepository.findOne({where:{bookingId:savedBooking.bookingId}, relations:['customer']})
-     const firstName = bookingCustomer.customer.firstName;
-     const date = savedBooking.tripDateTime;
-     const phone = bookingCustomer.customer.phone;
-     const email = bookingCustomer.customer.email;
-    const userEmail =`<!DOCTYPE html>
+      const savedBooking = await this.bookingRepository.save(booking);
+      const bookingCustomer = await this.bookingRepository.findOne({ where: { bookingId: savedBooking.bookingId }, relations: ['customer'] })
+      const firstName = bookingCustomer.customer.firstName;
+      const date = savedBooking.tripDateTime;
+      const phone = bookingCustomer.customer.phone;
+      const email = bookingCustomer.customer.email;
+      const userEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -101,7 +101,7 @@ async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; c
 
     <h3>Paiement :</h3>
     <p>
-      <strong>Méthode :</strong> ${paymentMethod==PaymentMethod.CARD?'Carte':'Sur place'}<br />
+      <strong>Méthode :</strong> ${paymentMethod == PaymentMethod.CARD ? 'Carte' : 'Sur place'}<br />
       <strong>Montant :</strong> ${totalPrice} €
     </p>
 
@@ -114,7 +114,7 @@ async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; c
 </html>
 `
 
-    const adminEmail=`<!DOCTYPE html>
+      const adminEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -154,37 +154,37 @@ async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; c
 </html>
 `
 
-    let clientSecret: string | undefined;
+      let clientSecret: string | undefined;
 
-    if (paymentMethod === PaymentMethod.CARD) {
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(Number(totalPrice) * 100), // Stripe expects amount in the smallest currency unit
-        currency: 'eur', // or 'usd', or your currency
-        receipt_email: user.email,
-        metadata: {
-          bookingId: savedBooking.bookingId,
-        },
+      if (paymentMethod === PaymentMethod.CARD) {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(Number(totalPrice) * 100), // Stripe expects amount in the smallest currency unit
+          currency: 'eur', // or 'usd', or your currency
+          receipt_email: user.email,
+          metadata: {
+            bookingId: savedBooking.bookingId,
+          },
+        });
+
+        clientSecret = paymentIntent.client_secret;
+      }
+      this.emailService.sendEmail({
+        to: bookingCustomer.customer.email,
+        subject: `Votre réservation enjöy est confirmée ✅`,
+        html: userEmail
       });
-
-      clientSecret = paymentIntent.client_secret;
+      this.emailService.sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: `Nouvelle réservation de trajet-${firstName} – ${date} à ${time}`,
+        html: adminEmail
+      })
+      return { booking: savedBooking, clientSecret };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Booking creation failed');
     }
-    this.emailService.sendEmail({
-      to:bookingCustomer.customer.email,
-      subject:`Votre réservation enjöy est confirmée ✅`,
-      html:userEmail
-    });
-     this.emailService.sendEmail({
-      to:process.env.ADMIN_EMAIL,
-      subject:`Nouvelle réservation de trajet-${firstName} – ${date} à ${time}`,
-      html:adminEmail
-    })
-    return { booking: savedBooking, clientSecret };
-  } catch (error) {
-    console.error(error);
-    throw new InternalServerErrorException('Booking creation failed');
-  }
 
-}
+  }
 
   async findOne(id: string): Promise<Booking> {
     const booking = await this.bookingRepository.findOne({
@@ -198,15 +198,15 @@ async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; c
     return booking;
   }
 
-  async completePayment(bookingId:string){
+  async completePayment(bookingId: string) {
     try {
-        const booking = await this.bookingRepository.findOne({where:{ bookingId}, relations:['customer']});
+      const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations: ['customer'] });
 
-        if (!booking) {
-            throw new NotFoundException('No booking found with provided id')
-        }
-        const {firstName} =booking.customer
-        const paymentSuccessEmail =`<!DOCTYPE html>
+      if (!booking) {
+        throw new NotFoundException('No booking found with provided id')
+      }
+      const { firstName } = booking.customer
+      const paymentSuccessEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -235,27 +235,27 @@ async create(createBookingDto: CreateBookingDto,): Promise<{ booking: Booking; c
   </body>
 </html>
 `
-this.emailService.sendEmail({
-  to:booking.customer.email,
-  subject:`Paiement confirmé – votre trajet est prêt`,
-  html: paymentSuccessEmail
-})
-      return await this.bookingRepository.update({bookingId}, {paymentStatus:PaymentStatus.PAID});
+      this.emailService.sendEmail({
+        to: booking.customer.email,
+        subject: `Paiement confirmé – votre trajet est prêt`,
+        html: paymentSuccessEmail
+      })
+      return await this.bookingRepository.update({ bookingId }, { paymentStatus: PaymentStatus.PAID });
     } catch (error) {
-       throw new InternalServerErrorException('An error occured', error);  
+      throw new InternalServerErrorException('An error occured', error);
     }
   }
 
-   async PaymentFailureNotification(bookingId:string){
+  async PaymentFailureNotification(bookingId: string) {
     try {
-      
-        const booking = await this.bookingRepository.findOne({where:{ bookingId}, relations:['customer']});
-        if (!booking) {
-            throw new NotFoundException('No booking found with provided id')
-        }
-        const {totalPrice, tripDateTime, departAddress,time,destinationAddress}= booking;
-        const {firstName, } = booking.customer
-  const adminEmail =`<!DOCTYPE html>
+
+      const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations: ['customer'] });
+      if (!booking) {
+        throw new NotFoundException('No booking found with provided id')
+      }
+      const { totalPrice, tripDateTime, departAddress, time, destinationAddress } = booking;
+      const { firstName, } = booking.customer
+      const adminEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -285,7 +285,7 @@ this.emailService.sendEmail({
 </html>
 `
 
-const emailUser= `
+      const emailUser = `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -316,44 +316,44 @@ const emailUser= `
   </body>
 </html>
 `;
-        
-        this.emailService.sendEmail({
-          to:process.env.ADMIN_EMAIL,
-          html:adminEmail,
-          subject:`Échec de paiement – ${firstName} – Trajet du ${booking.tripDateTime} à ${booking.time}`
-        })
 
-        this.emailService.sendEmail({
-          to:booking.customer.email,
-          html:emailUser,
-          subject:`Paiement échoué – action requise`
-        })
+      this.emailService.sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        html: adminEmail,
+        subject: `Échec de paiement – ${firstName} – Trajet du ${booking.tripDateTime} à ${booking.time}`
+      })
 
-      return {message:'Admin has been notified of the payment failure'}
+      this.emailService.sendEmail({
+        to: booking.customer.email,
+        html: emailUser,
+        subject: `Paiement échoué – action requise`
+      })
+
+      return { message: 'Admin has been notified of the payment failure' }
     } catch (error) {
-       throw new InternalServerErrorException('An error occured', error);  
+      throw new InternalServerErrorException('An error occured', error);
     }
   }
 
- async handleCancellation(bookingId: string, dto: HandleCancellationDto) {
-  const booking = await this.bookingRepository.findOne({
-    where: { bookingId },
-    relations:['customer']
-  });
+  async handleCancellation(bookingId: string, dto: HandleCancellationDto) {
+    const booking = await this.bookingRepository.findOne({
+      where: { bookingId },
+      relations: ['customer']
+    });
 
-  if (!booking || booking.cancellationStatus !== CancellationStatus.REQUESTED) {
-    throw new BadRequestException('No cancellation request pending');
-  }
-  const firstName = booking.customer.firstName;
-  const time = booking.time;
-  let sentEmail=``;
-  const date = booking.tripDateTime;
-  if (dto.action === 'REJECT') {
-    booking.cancellationStatus = CancellationStatus.REJECTED;
-    await this.bookingRepository.save(booking);
+    if (!booking || booking.cancellationStatus !== CancellationStatus.REQUESTED) {
+      throw new BadRequestException('No cancellation request pending');
+    }
+    const firstName = booking.customer.firstName;
+    const time = booking.time;
+    let sentEmail = ``;
+    const date = booking.tripDateTime;
+    if (dto.action === 'REJECT') {
+      booking.cancellationStatus = CancellationStatus.REJECTED;
+      await this.bookingRepository.save(booking);
 
-    // Send rejection email to user
-    sentEmail = `<!DOCTYPE html>
+      // Send rejection email to user
+      sentEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -385,15 +385,15 @@ const emailUser= `
   </body>
 </html>
 `
-    await this.emailService.sendEmail({
-      to: booking.customer.email,
-      subject:dto.action!='REJECT'? 'Annulation acceptée par notre équipe':'Demande d\'annulation refusée',
-      html: sentEmail,
-    });
+      await this.emailService.sendEmail({
+        to: booking.customer.email,
+        subject: dto.action != 'REJECT' ? 'Annulation acceptée par notre équipe' : 'Demande d\'annulation refusée',
+        html: sentEmail,
+      });
 
-    return { message: 'Cancellation rejected' };
-  }else{
-    sentEmail =`<!DOCTYPE html>
+      return { message: 'Cancellation rejected' };
+    } else {
+      sentEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -418,107 +418,107 @@ const emailUser= `
   </body>
 </html>
 `
-  }
-
-  // Approve logic
-  booking.cancellationStatus = CancellationStatus.APPROVED;
-
-  const tripDateTime = new Date(booking.tripDateTime);
-  const now = new Date();
-  const hoursBeforeTrip = (tripDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-  let refundAmount = 0;
-  if (hoursBeforeTrip >= 48) {
-    refundAmount = booking.totalPrice;
-  } else if (dto.refundAmount != null) {
-    refundAmount = dto.refundAmount;
-  }
-
-  booking.refundedAmount = refundAmount;
-
-  if (booking.paymentStatus === PaymentStatus.COMPLETED && refundAmount > 0) {
-    // const paymentIntentId = await this.getPaymentIntentIdForBooking(booking.bookingId);
-    // await stripe.refunds.create({
-    //   payment_intent: paymentIntentId,
-    //   amount: Math.round(refundAmount * 100),
-    // });
-  }
-
-  await this.bookingRepository.save(booking);
-
-  // Send approval email to user
-  await this.emailService.sendEmail({
-    to: booking.customer.email,
-    subject: 'Booking Cancellation Approved',
-    text: `Your cancellation for booking ID ${booking.bookingId} has been approved.\nRefund Amount: €${refundAmount}`,
-  });
-
-  return {
-    message: 'Cancellation approved',
-    refundAmount,
-  };
-}
-
-async usertripHistory(searchDto: SearchBookingDto, customerId:string) {
-    try {
-          const { page = 1, limit = 10, } = searchDto;
-          const today = startOfDay(new Date());
-  const [data, total] = await this.bookingRepository
-    .createQueryBuilder('booking')
-    .leftJoinAndSelect('booking.customer', 'customer')
-    .addSelect(`
-      CASE 
-        WHEN booking.tripDateTime >= :today THEN 0
-        ELSE 1
-      END
-    `, 'priority_order')
-    .where('customer.id = :customerId', { customerId })
-    .orderBy('priority_order', 'ASC') // future trips first
-    .addOrderBy('booking.tripDateTime', 'ASC') // then by trip date/time
-    .setParameter('today', today.toISOString()) // PostgreSQL ISO format
-    .skip((page - 1) * limit)
-    .take(limit)
-    .getManyAndCount();
-  return {
-    data,
-    total,
-    page,
-    limit,
-  };
-    } catch (error) {
-     throw new InternalServerErrorException(error.message)  
     }
-   
+
+    // Approve logic
+    booking.cancellationStatus = CancellationStatus.APPROVED;
+
+    const tripDateTime = new Date(booking.tripDateTime);
+    const now = new Date();
+    const hoursBeforeTrip = (tripDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    let refundAmount = 0;
+    if (hoursBeforeTrip >= 48) {
+      refundAmount = booking.totalPrice;
+    } else if (dto.refundAmount != null) {
+      refundAmount = dto.refundAmount;
+    }
+
+    booking.refundedAmount = refundAmount;
+
+    if (booking.paymentStatus === PaymentStatus.COMPLETED && refundAmount > 0) {
+      // const paymentIntentId = await this.getPaymentIntentIdForBooking(booking.bookingId);
+      // await stripe.refunds.create({
+      //   payment_intent: paymentIntentId,
+      //   amount: Math.round(refundAmount * 100),
+      // });
+    }
+
+    await this.bookingRepository.save(booking);
+
+    // Send approval email to user
+    await this.emailService.sendEmail({
+      to: booking.customer.email,
+      subject: 'Booking Cancellation Approved',
+      text: `Your cancellation for booking ID ${booking.bookingId} has been approved.\nRefund Amount: €${refundAmount}`,
+    });
+
+    return {
+      message: 'Cancellation approved',
+      refundAmount,
+    };
   }
 
-
-
-
-async findAll(searchDto: SearchBookingDto) {
-    const { page = 1, limit = 10, } = searchDto;
+  async usertripHistory(searchDto: SearchBookingDto, customerId: string) {
+    try {
+      const { page = 1, limit = 10, } = searchDto;
       const today = startOfDay(new Date());
-   const [data, total] = await this.bookingRepository
-    .createQueryBuilder('booking')
-    .leftJoinAndSelect('booking.customer', 'customer')
-    .addSelect(`
+      const [data, total] = await this.bookingRepository
+        .createQueryBuilder('booking')
+        .leftJoinAndSelect('booking.customer', 'customer')
+        .addSelect(`
       CASE 
         WHEN booking.tripDateTime >= :today THEN 0
         ELSE 1
       END
     `, 'priority_order')
-    .orderBy('priority_order', 'ASC') // future trips first
-    .addOrderBy('booking.tripDateTime', 'ASC') // then by trip date/time
-    .setParameter('today', today.toISOString()) // PostgreSQL ISO format
-    .skip((page - 1) * limit)
-    .take(limit)
-    .getManyAndCount();
-  return {
-    data,
-    total,
-    page,
-    limit,
-  };
-  
+        .where('customer.id = :customerId', { customerId })
+        .orderBy('priority_order', 'ASC') // future trips first
+        .addOrderBy('booking.tripDateTime', 'ASC') // then by trip date/time
+        .setParameter('today', today.toISOString()) // PostgreSQL ISO format
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+      return {
+        data,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message)
+    }
+
+  }
+
+
+
+
+  async findAll(searchDto: SearchBookingDto) {
+    const { page = 1, limit = 10, } = searchDto;
+    const today = startOfDay(new Date());
+    const [data, total] = await this.bookingRepository
+      .createQueryBuilder('booking')
+      .leftJoinAndSelect('booking.customer', 'customer')
+      .addSelect(`
+      CASE 
+        WHEN booking.tripDateTime >= :today THEN 0
+        ELSE 1
+      END
+    `, 'priority_order')
+      .orderBy('priority_order', 'ASC') // future trips first
+      .addOrderBy('booking.tripDateTime', 'ASC') // then by trip date/time
+      .setParameter('today', today.toISOString()) // PostgreSQL ISO format
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
+
   }
 
   async remove(id: string): Promise<void> {
@@ -526,57 +526,57 @@ async findAll(searchDto: SearchBookingDto) {
     await this.bookingRepository.remove(booking);
   }
 
-async requestCancellation(bookingId: string, userId: string, dto: CancelBookingRequestDto) {
-  const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations:['customer'] });
+  async requestCancellation(bookingId: string, userId: string, dto: CancelBookingRequestDto) {
+    const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations: ['customer'] });
 
-  if (!booking) {
-    throw new NotFoundException('Booking not found or not owned by user');
-  }
+    if (!booking) {
+      throw new NotFoundException('Booking not found or not owned by user');
+    }
 
-  if (booking.cancellationStatus !== CancellationStatus.NONE) {
-    throw new BadRequestException('Cancellation already requested or processed');
-  }
+    if (booking.cancellationStatus !== CancellationStatus.NONE) {
+      throw new BadRequestException('Cancellation already requested or processed');
+    }
 
-const now = new Date();
-const tripDateTime = new Date(booking.tripDateTime);
-const diffInMs = tripDateTime.getTime() - now.getTime(); 
-const diffInHours = diffInMs / (1000 * 60 * 60);
-const firstName = booking.customer.firstName
-    const date= booking.tripDateTime;
+    const now = new Date();
+    const tripDateTime = new Date(booking.tripDateTime);
+    const diffInMs = tripDateTime.getTime() - now.getTime();
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    const firstName = booking.customer.firstName
+    const date = booking.tripDateTime;
     const time = booking.time;
     const customerEmail = booking.customer.email;
     const phoneNumber = booking.customer.phone;
     const {
-      departAddress, 
+      departAddress,
       flightNumber,
       bags,
       childSeat,
-      destinationAddress, 
-      strollers, 
+      destinationAddress,
+      strollers,
       boosterSeat,
-       pets,
-    
+      pets,
+
       passengers,
       vehicleType,
       paymentMethod,
-      totalPrice, 
-      wheelchair} =booking;
-const requiresAdminApproval= diffInHours > 48;
-  await this.bookingRepository.update(
-    { bookingId },
-    {
-      cancellationStatus: requiresAdminApproval ? CancellationStatus.APPROVED : CancellationStatus.REQUESTED,
-      status:requiresAdminApproval? BookingStatus.PENDING: BookingStatus.CANCELLED,
-      cancellationReason: dto.reason,
-      refundedAmount:requiresAdminApproval? Number(booking.totalPrice):0,
-      cancellationRequestedAt: now,
-    },
-  );
-  let userEmail ='';
+      totalPrice,
+      wheelchair } = booking;
+    const requiresAdminApproval = diffInHours > 48;
+    await this.bookingRepository.update(
+      { bookingId },
+      {
+        cancellationStatus: requiresAdminApproval ? CancellationStatus.APPROVED : CancellationStatus.REQUESTED,
+        status: requiresAdminApproval ? BookingStatus.PENDING : BookingStatus.CANCELLED,
+        cancellationReason: dto.reason,
+        refundedAmount: requiresAdminApproval ? Number(booking.totalPrice) : 0,
+        cancellationRequestedAt: now,
+      },
+    );
+    let userEmail = '';
 
-  if(!requiresAdminApproval){
-    
-    userEmail =`<!DOCTYPE html>
+    if (!requiresAdminApproval) {
+
+      userEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -598,8 +598,8 @@ const requiresAdminApproval= diffInHours > 48;
   </body>
 </html>
 `
-  }else{
-    userEmail =`<!DOCTYPE html>
+    } else {
+      userEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -623,14 +623,14 @@ const requiresAdminApproval= diffInHours > 48;
   </body>
 </html>
 `
-  }
-  this.emailService.sendEmail({
-    subject:requiresAdminApproval?' Votre demande d’annulation est en cours de traitement':'Annulation confirmée – aucun frais retenu',
-    to: booking.customer.email,
-    html: userEmail,
-  })
+    }
+    this.emailService.sendEmail({
+      subject: requiresAdminApproval ? ' Votre demande d’annulation est en cours de traitement' : 'Annulation confirmée – aucun frais retenu',
+      to: booking.customer.email,
+      html: userEmail,
+    })
 
-  const adminEmail = `<!DOCTYPE html>
+    const adminEmail = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -672,44 +672,44 @@ const requiresAdminApproval= diffInHours > 48;
   </body>
 </html>
 `
-await this.emailService.sendEmail({
-  to:process.env.ADMIN_EMAIL,
-  html: adminEmail,
-  subject:` Demande d’annulation-${firstName}-Trajet du ${date} à ${time}
-`
-})
-  return {
-    message: requiresAdminApproval
-      ? 'Cancellation request submitted for manual review (partial or no refund)'
-      : 'Cancellation approved',
-  };
-}
-
-
-async sendRideDetails(dto:SendRideDetailsDto){
-  try {
     await this.emailService.sendEmail({
-      subject:dto.subject??`Ride Confirmation and details`,
-      to:dto.email,
-      text:dto.message
+      to: process.env.ADMIN_EMAIL,
+      html: adminEmail,
+      subject: ` Demande d’annulation-${firstName}-Trajet du ${date} à ${time}
+`
     })
-  } catch (error) {
-    throw new InternalServerErrorException('An error occured')
+    return {
+      message: requiresAdminApproval
+        ? 'Cancellation request submitted for manual review (partial or no refund)'
+        : 'Cancellation approved',
+    };
   }
-}
 
-async markTripAsCompleted(bookingId:string){
-  try {
-     const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations:['customer'] });
 
-  if (!booking) {
-    throw new NotFoundException('Booking not found or not owned by user');
+  async sendRideDetails(dto: SendRideDetailsDto) {
+    try {
+      await this.emailService.sendEmail({
+        subject: dto.subject ?? `Ride Confirmation and details`,
+        to: dto.email,
+        text: dto.message
+      })
+    } catch (error) {
+      throw new InternalServerErrorException('An error occured')
+    }
   }
-   return await this.bookingRepository.update({bookingId}, {status: BookingStatus.COMPLETED}) 
-  } catch (error) {
-   throw new InternalServerErrorException('Failed to update booking data', error);
 
+  async markTripAsCompleted(bookingId: string) {
+    try {
+      const booking = await this.bookingRepository.findOne({ where: { bookingId }, relations: ['customer'] });
+
+      if (!booking) {
+        throw new NotFoundException('Booking not found or not owned by user');
+      }
+      return await this.bookingRepository.update({ bookingId }, { status: BookingStatus.COMPLETED })
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update booking data', error);
+
+    }
   }
-}
 
 }

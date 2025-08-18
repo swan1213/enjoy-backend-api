@@ -15,7 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('check-email')
   @ApiOperation({ summary: 'Check if email exists' })
@@ -25,8 +25,8 @@ export class AuthController {
   }
   @Post('signup')
   @ApiOperation({ summary: 'Create new user account' })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'User successfully created',
     schema: {
       example: {
@@ -39,7 +39,7 @@ export class AuthController {
         }
       }
     }
-  
+
   })
   @ApiResponse({ status: 409, description: 'Email already exists' })
   async signUp(@Body() signUpDto: SignUpDto) {
@@ -81,44 +81,44 @@ export class AuthController {
       user: req.user,
     };
   }
-@Put('/me')
-@ApiOperation({ summary: 'Update profile' })
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-async updateMe(
-  @Request() req,
-  @Body() updateUserDto: UpdateUserDto
-) {
-  return this.authService.updateUser(req.user.id, updateUserDto);
-}
+  @Put('/me')
+  @ApiOperation({ summary: 'Update profile' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async updateMe(
+    @Request() req,
+    @Body() updateUserDto: UpdateUserDto
+  ) {
+    return this.authService.updateUser(req.user.id, updateUserDto);
+  }
   @Patch('change-password')
   @ApiOperation({ summary: 'Change password' })
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
-async changePassword(
-   @Request()req,
-  @Body() changePasswordDto: ChangePasswordDto,
-) {
-  return this.authService.changePassword(
-    req.user.id,
-    changePasswordDto.currentPassword,
-    changePasswordDto.newPassword,
-  );
-}
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
- @Delete('/delete-account')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      req.user.id,
+      changePasswordDto.currentPassword,
+      changePasswordDto.newPassword,
+    );
+  }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete('/delete-account')
   @ApiOperation({ summary: 'For user to delete their account' })
-  async deleteAccount(@Request()req) {
+  async deleteAccount(@Request() req) {
     return this.authService.deleteUser(req.user.id);
   }
-@Get('admin/users/all')
-async getAllUsers(@Query() query: PaginationQueryDto) {
-  return this.authService.findAllUsers(query.page, query.limit);
-}
+  @Get('admin/users/all')
+  async getAllUsers(@Query() query: PaginationQueryDto) {
+    return this.authService.findAllUsers(query.page, query.limit);
+  }
 
-@Patch('admin/:id/suspend')
-@ApiOperation({ summary: 'For admin to suspend user' })
+  @Patch('admin/:id/suspend')
+  @ApiOperation({ summary: 'For admin to suspend user' })
   async suspendUser(@Param('id') id: string) {
     return this.authService.suspendUser(id);
   }

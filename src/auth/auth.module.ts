@@ -25,4 +25,4 @@ import { Booking } from 'src/trip/entities/booking.entity';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
