@@ -35,4 +35,7 @@ export class SignUpDto {
   @Min(1900)
   @Max(new Date().getFullYear())
   birthYear?: number;
+
+  @IsBoolean()
+  isAdmin?: boolean;
 }
